@@ -147,6 +147,25 @@ impl CudaDevice {
         })
     }
 
+    /// Allocates device memory and increments the reference counter of [CudaDevice].
+    ///
+    /// # Safety
+    /// This is unsafe because the device memory is unset after this call.
+    pub unsafe fn managed<T: DeviceRepr>(
+        self: &Arc<Self>,
+        len: usize,
+    ) -> Result<CudaSlice<T>, result::DriverError> {
+        self.bind_to_thread()?;
+        let flag = sys::CUmemAttach_flags::CU_MEM_ATTACH_SINGLE;
+        let cu_device_ptr = result::malloc_managed(len * std::mem::size_of::<T>(), flag)?;
+        Ok(CudaSlice {
+            cu_device_ptr,
+            len,
+            device: self.clone(),
+            host_buf: None,
+        })
+    }
+
     /// Allocates device memory with no associated host memory, and memsets
     /// the device memory to all 0s.
     ///

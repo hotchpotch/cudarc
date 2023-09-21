@@ -464,6 +464,24 @@ pub unsafe fn malloc_async(
     Ok(dev_ptr.assume_init())
 }
 
+/// Allocates memory that will be automatically managed by the Unified Memory system.
+///
+/// See [cuda docs](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1gd228014f19cc0975ebe3e0dd2af6dd1b)
+///
+/// # Safety
+/// 1. The stream should be an already created stream.
+/// 2. The memory return by this is unset, which may be invalid for `T`.
+/// 3. All uses of this memory must be on the same stream.
+pub unsafe fn malloc_managed(
+    num_bytes: usize,
+    flag: sys::CUmemAttach_flags,
+) -> Result<sys::CUdeviceptr, DriverError> {
+    println!("Size {num_bytes} - flags {flag:?}");
+    let mut dev_ptr = MaybeUninit::uninit();
+    sys::cuMemAllocManaged(dev_ptr.as_mut_ptr(), num_bytes, flag as u32).result()?;
+    Ok(dev_ptr.assume_init())
+}
+
 /// Allocates memory
 ///
 /// See [cuda docs](https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__MEM.html#group__CUDA__MEM_1gb82d2a09844a58dd9e744dc31e8aa467)
