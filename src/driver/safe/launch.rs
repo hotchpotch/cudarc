@@ -49,7 +49,7 @@ impl CudaModule {
 impl CudaFunction {
     #[inline(always)]
     unsafe fn launch_async_impl(
-        self,
+        &self,
         cfg: LaunchConfig,
         params: &mut [*mut std::ffi::c_void],
     ) -> Result<(), result::DriverError> {
@@ -66,7 +66,7 @@ impl CudaFunction {
 
     #[inline(always)]
     unsafe fn par_launch_async_impl(
-        self,
+        &self,
         stream: &CudaStream,
         cfg: LaunchConfig,
         params: &mut [*mut std::ffi::c_void],
@@ -188,7 +188,7 @@ pub unsafe trait LaunchAsync<Params> {
     ///
     /// **If you launch a kernel or drop a value on a different stream
     /// this may not hold**
-    unsafe fn launch(self, cfg: LaunchConfig, params: Params) -> Result<(), result::DriverError>;
+    unsafe fn launch(&self, cfg: LaunchConfig, params: Params) -> Result<(), result::DriverError>;
 
     /// Launch the function on a stream concurrent to the device's default
     /// work stream.
@@ -200,7 +200,7 @@ pub unsafe trait LaunchAsync<Params> {
     /// That means that if any of the kernels modify the same memory location, you'll get race
     /// conditions or potentially undefined behavior.
     unsafe fn launch_on_stream(
-        self,
+        &self,
         stream: &CudaStream,
         cfg: LaunchConfig,
         params: Params,
@@ -212,7 +212,7 @@ macro_rules! impl_launch {
 unsafe impl<$($Vars: DeviceRepr),*> LaunchAsync<($($Vars, )*)> for CudaFunction {
     #[inline(always)]
     unsafe fn launch(
-        self,
+        &self,
         cfg: LaunchConfig,
         args: ($($Vars, )*)
     ) -> Result<(), result::DriverError> {
@@ -222,7 +222,7 @@ unsafe impl<$($Vars: DeviceRepr),*> LaunchAsync<($($Vars, )*)> for CudaFunction 
 
     #[inline(always)]
     unsafe fn launch_on_stream(
-        self,
+        &self,
         stream: &CudaStream,
         cfg: LaunchConfig,
         args: ($($Vars, )*)

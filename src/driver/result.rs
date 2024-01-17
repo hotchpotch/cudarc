@@ -918,3 +918,35 @@ pub mod external_memory {
         Ok(device_ptr.assume_init())
     }
 }
+
+// pub fn stream_is_capturing(stream: sys::CUstream) -> Result<sys::v{
+
+pub mod graph {
+    use super::{sys, DriverError};
+    use std::mem::MaybeUninit;
+
+    pub fn stream_begin_capture_v2(
+        stream: sys::CUstream,
+        mode: sys::CUstreamCaptureMode,
+    ) -> Result<(), DriverError> {
+        unsafe { sys::cuStreamBeginCapture_v2(stream, mode).result()? };
+        Ok(())
+    }
+
+    pub fn stream_end_capture(
+        stream: sys::CUstream,
+    ) -> Result<(sys::CUgraph, sys::CUgraphExec), DriverError> {
+        let mut graph = MaybeUninit::uninit();
+        let mut instance = MaybeUninit::uninit();
+        unsafe { sys::cuStreamEndCapture(stream, graph.as_mut_ptr()).result()? }
+        let graph = unsafe { graph.assume_init() };
+        unsafe { sys::cuGraphInstantiateWithFlags(instance.as_mut_ptr(), graph, 0).result()? };
+        let instance = unsafe { instance.assume_init() };
+        Ok((graph, instance))
+    }
+
+    pub fn launch(exec: sys::CUgraphExec, stream: sys::CUstream) -> Result<(), DriverError> {
+        unsafe { sys::cuGraphLaunch(exec, stream).result()? };
+        Ok(())
+    }
+}
