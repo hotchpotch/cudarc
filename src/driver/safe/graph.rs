@@ -1,5 +1,5 @@
 use crate::driver::safe::{CudaDevice, DriverError};
-use crate::driver::{result, result::graph, sys};
+use crate::driver::{result::graph, sys};
 use std::sync::Arc;
 
 pub struct Graph {
@@ -27,7 +27,6 @@ impl Handle {
     pub fn new(device: &Arc<CudaDevice>) -> Result<Self, DriverError> {
         let stream = device.stream;
         // let status = result::stream_is_capturing(stream)?;
-        println!("Status {status:?}");
         let mode = sys::CUstreamCaptureMode::CU_STREAM_CAPTURE_MODE_GLOBAL;
         graph::stream_begin_capture_v2(stream, mode)?;
         Ok(Self {

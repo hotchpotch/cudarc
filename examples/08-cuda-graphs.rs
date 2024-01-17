@@ -17,34 +17,34 @@ fn main() -> Result<(), DriverError> {
     let a_dev = dev.htod_copy(a_host.into())?;
     let mut b_dev = a_dev.clone();
 
-    let start = std::time::Instant::now();
     let n = 3;
     let cfg = LaunchConfig::for_num_elems(n);
-    let loops = 100;
+    let loops = 10_000;
+
+    dev.synchronize()?;
+    let start = std::time::Instant::now();
     for _ in 0..loops {
         unsafe { f.launch(cfg, (&mut b_dev, &a_dev, n as i32)) }?;
     }
-    let a_host_2 = dev.sync_reclaim(a_dev)?;
-    let b_host = dev.sync_reclaim(b_dev)?;
-    println!("Found {:?}", b_host);
-    println!("Expected {:?}", a_host.map(f32::sin));
+    dev.synchronize()?;
     println!("Without cuda graphs {:?}", start.elapsed());
-    assert_eq!(&a_host, a_host_2.as_slice());
+    // assert_eq!(&a_host, a_host_2.as_slice());
 
-    let loops = 100;
     let a_dev = dev.htod_copy(a_host.into())?;
     let mut b_dev = a_dev.clone();
-    let handle = Graph::start_capture(&dev).unwrap();
+    let handle = Graph::start_capture(&dev)?;
     for _ in 0..loops {
         unsafe { f.launch(cfg, (&mut b_dev, &a_dev, n as i32)) }.unwrap();
     }
-    //let graph = handle.end_capture()?;
+    let graph = handle.end_capture()?;
+    // First launch is supposed to be slower
+    graph.launch()?;
+    dev.synchronize()?;
     let start = std::time::Instant::now();
-    //graph.launch()?;
-    // let a_host_2 = dev.sync_reclaim(a_dev)?;
-    // let b_host = dev.sync_reclaim(b_dev)?;
-    println!("Wit cuda graphs {:?}", start.elapsed());
-    assert_eq!(&a_host, a_host_2.as_slice());
+    graph.launch()?;
+    dev.synchronize()?;
+    println!("With cuda graphs {:?}", start.elapsed());
+    // assert_eq!(&a_host, a_host_2.as_slice());
 
     Ok(())
 }

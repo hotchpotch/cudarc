@@ -919,7 +919,17 @@ pub mod external_memory {
     }
 }
 
-// pub fn stream_is_capturing(stream: sys::CUstream) -> Result<sys::v{
+pub fn stream_is_capturing(stream: sys::CUstream) -> Result<sys::CUstreamCaptureStatus, DriverError>{
+    let status = unsafe{
+    let mut status = MaybeUninit::uninit();
+    sys::cuStreamIsCapturing(
+        stream,
+        status.as_mut_ptr(),
+    ).result()?;
+status.assume_init()
+    };
+    Ok(status)
+}
 
 pub mod graph {
     use super::{sys, DriverError};

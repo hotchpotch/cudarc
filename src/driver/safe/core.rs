@@ -67,11 +67,12 @@ impl CudaDevice {
             )?
         };
         let is_async = value > 0;
+        let stream = result::stream::create(result::stream::StreamKind::NonBlocking)?;
 
         let device = CudaDevice {
             cu_device,
             cu_primary_ctx,
-            stream: std::ptr::null_mut(),
+            stream,
             event,
             modules: RwLock::new(BTreeMap::new()),
             ordinal,
