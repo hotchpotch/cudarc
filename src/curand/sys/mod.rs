@@ -176,21 +176,6 @@ extern "C" {
         outputPtr: *mut ::core::ffi::c_uint,
         num: usize,
     ) -> curandStatus_t;
-    pub fn curandGenerateBinomial(
-        generator: curandGenerator_t,
-        outputPtr: *mut ::core::ffi::c_uint,
-        num: usize,
-        n: ::core::ffi::c_uint,
-        p: f64,
-    ) -> curandStatus_t;
-    pub fn curandGenerateBinomialMethod(
-        generator: curandGenerator_t,
-        outputPtr: *mut ::core::ffi::c_uint,
-        num: usize,
-        n: ::core::ffi::c_uint,
-        p: f64,
-        method: curandMethod_t,
-    ) -> curandStatus_t;
     pub fn curandGenerateLogNormal(
         generator: curandGenerator_t,
         outputPtr: *mut f32,
@@ -325,25 +310,6 @@ mod loaded {
         num: usize,
     ) -> curandStatus_t {
         (culib().curandGenerate)(generator, outputPtr, num)
-    }
-    pub unsafe fn curandGenerateBinomial(
-        generator: curandGenerator_t,
-        outputPtr: *mut ::core::ffi::c_uint,
-        num: usize,
-        n: ::core::ffi::c_uint,
-        p: f64,
-    ) -> curandStatus_t {
-        (culib().curandGenerateBinomial)(generator, outputPtr, num, n, p)
-    }
-    pub unsafe fn curandGenerateBinomialMethod(
-        generator: curandGenerator_t,
-        outputPtr: *mut ::core::ffi::c_uint,
-        num: usize,
-        n: ::core::ffi::c_uint,
-        p: f64,
-        method: curandMethod_t,
-    ) -> curandStatus_t {
-        (culib().curandGenerateBinomialMethod)(generator, outputPtr, num, n, p, method)
     }
     pub unsafe fn curandGenerateLogNormal(
         generator: curandGenerator_t,
@@ -508,21 +474,6 @@ mod loaded {
             outputPtr: *mut ::core::ffi::c_uint,
             num: usize,
         ) -> curandStatus_t,
-        pub curandGenerateBinomial: unsafe extern "C" fn(
-            generator: curandGenerator_t,
-            outputPtr: *mut ::core::ffi::c_uint,
-            num: usize,
-            n: ::core::ffi::c_uint,
-            p: f64,
-        ) -> curandStatus_t,
-        pub curandGenerateBinomialMethod: unsafe extern "C" fn(
-            generator: curandGenerator_t,
-            outputPtr: *mut ::core::ffi::c_uint,
-            num: usize,
-            n: ::core::ffi::c_uint,
-            p: f64,
-            method: curandMethod_t,
-        ) -> curandStatus_t,
         pub curandGenerateLogNormal: unsafe extern "C" fn(
             generator: curandGenerator_t,
             outputPtr: *mut f32,
@@ -661,14 +612,6 @@ mod loaded {
                 .get(b"curandGenerate\0")
                 .map(|sym| *sym)
                 .expect("Expected symbol in library");
-            let curandGenerateBinomial = __library
-                .get(b"curandGenerateBinomial\0")
-                .map(|sym| *sym)
-                .expect("Expected symbol in library");
-            let curandGenerateBinomialMethod = __library
-                .get(b"curandGenerateBinomialMethod\0")
-                .map(|sym| *sym)
-                .expect("Expected symbol in library");
             let curandGenerateLogNormal = __library
                 .get(b"curandGenerateLogNormal\0")
                 .map(|sym| *sym)
@@ -761,8 +704,6 @@ mod loaded {
                 curandDestroyDistribution,
                 curandDestroyGenerator,
                 curandGenerate,
-                curandGenerateBinomial,
-                curandGenerateBinomialMethod,
                 curandGenerateLogNormal,
                 curandGenerateLogNormalDouble,
                 curandGenerateLongLong,
